@@ -1,8 +1,8 @@
 #
 # Colleen Karnas-Haines
 # ST 590-601
-# 10/25/2018
-# First Success
+# 12/2/2018
+# Project 3
 library(shiny)
 library(shinydashboard)
 
@@ -18,6 +18,8 @@ newNames <-c("ID","Name","State","InstitutionType","Math75th","Math25th","Verbal
              "Verbal25th","InStateTuition","OutStateTuition","GradRate6yrs")
 #collegeData <- read_csv(file="NCState/ShinyApps/CollegeApp/CollegeApp/ipedsData/ipedsData.csv", col_names=newNames, skip=1)
 collegeData <- read_csv(file="ipedsData/ipedsData.csv", col_names=newNames, skip=1)
+clusterChoices= c("Math75th","Math25th","Verbal75th",
+                  "Verbal25th","InStateTuition","OutStateTuition", "GradRate6yrs")
 
 #print(collegeData)
 #make into a tble
@@ -157,6 +159,151 @@ shinyUI(fluidPage(themes="sandstone",
                h1(withMathJax(helpText("$$\\bar{x}$$"))),
                textOutput("info2"),
                tableOutput("moneytable")
+             )
+             
+             #Closes sidebar layout
+           )
+           
+           #closes the smaller tabPanel
+  ),
+  
+  tabPanel("Supervised Learning", icon=icon("star"),fluid=TRUE,
+           
+           
+           
+           #Title
+           titlePanel ("What predictions can we make about 6-yr graduation rates?"),
+           # Sidebar with options for the data set
+           sidebarLayout(
+             sidebarPanel(
+               
+               h4("Four-year institutions of higher education have, on average, a 60% 6-yr graduation rate across the US. Let's see how
+                  well our power of prediction is. We will see how well we can predict if a school is going to have a graduation rate at or above average (category=1)
+                  or if they will perform under the average (category = 0)"),
+               
+               h5("Click on the 'Pridict w/ Your Own Data' tab if you want to enter in info on a specific school"),
+               hr(),
+               
+               h4("Select the suervised learning you are interested in:"),
+               
+               selectInput("sl", "Classification Tree or kNN?", c("Classification Tree"="tree","kNN Analysis"="knn")),
+               
+               br(),
+               conditionalPanel(
+                 condition = "input.sl == 'tree'",
+                 checkboxGroupInput("instType","What institution type would you like to explore?", choices=c("Private for profit","Private non profit","Public"),
+                                    selected=c("Public","Private for profit","Private non profit")),
+                 h5("**If no boxes are checked, you will get results from all institution types**")
+                 
+               )
+               
+               
+             ),
+             
+             # Show outputs
+             mainPanel(
+               uiOutput("dynamicSLInputs"),
+               uiOutput("dynamicSLOutputs")
+             )
+             
+             #Closes sidebar layout
+           )
+           
+           #closes the smaller tabPanel
+  ),
+  
+  
+  
+  tabPanel("Unsupervised Learning", icon=icon("calculator"),fluid=TRUE,
+           
+           
+           
+           #Title
+           titlePanel ("Unsupervised!"),
+           # Sidebar with options for the data set
+           sidebarLayout(
+             sidebarPanel(
+               
+               h4("Let's examine some data via k-means clustering"),
+               
+               
+               
+               selectInput("xVar", "Variable used for x-ais", selected = "Math75th", choices = clusterChoices),
+               
+               selectInput("yVar", "Variable used for y-ais", selected = "Verbal75th", choices = clusterChoices),
+               
+               selectInput("userClusters", "How many clusters would you like?", 1:9, selected = 2),
+               
+               checkboxInput("SAT","Would you like to only examine institutions that report SAT stats?", value = TRUE),
+               
+               br()
+               
+               ),
+             
+             # Show outputs
+             mainPanel(
+               uiOutput("dynamicUSLInputs"),
+               uiOutput("dynamicUSLOutputs")
+             )
+             
+             #Closes sidebar layout
+             )
+           
+           #closes the smaller tabPanel
+  ),
+  tabPanel("Predict w/ Your Own Data", icon=icon("pencil"),fluid=TRUE,
+           
+           
+           
+           #Title
+           titlePanel ("Let's make predictions with your own data"),
+           # Sidebar with options for the data set
+           sidebarLayout(
+             sidebarPanel(
+               
+               h4("Four-year institutions of higher education have, on average, a 60% 6-yr graduation rate across the US. If you have some data 
+                  to enter, we will see if your school is going to have a graduation rate at or above average (category=1)
+                  or if they will perform under the average (category = 0)"),
+               
+               
+               h4("Enter your Data here:"),
+               
+               textInput("userInstName", "What is your institution's name?", value = "Hypothetical Institution"),
+               sliderInput("userMathHigh",
+                           "75th percentile Math SAT for enrolled students (0 if SATs not required)",
+                           min = 0,
+                           max = 800,
+                           value = 400),
+               sliderInput("userMathLow",
+                           "25th percentile Math SAT for enrolled students (0 if SATs not required)",
+                           min = 0,
+                           max = 800,
+                           value = 400),
+               sliderInput("userVerbalHigh",
+                           "75th percentile Verbal SAT for enrolled students (0 if SATs not required)",
+                           min = 0,
+                           max = 800,
+                           value = 400),
+               sliderInput("userVerbalLow",
+                           "25th percentile Verbal SAT for enrolled students (0 if SATs not required)",
+                           min = 0,
+                           max = 800,
+                           value = 400),
+               numericInput("userInStateTuition",
+                            "What is the In State Tuition for you institution (if no destinction between in or out of state, enter same amount both times",
+                            value = 20000),
+               numericInput("userOutStateTuition",
+                            "What is the Out of State Tuition for you institution (if no destinction between in or out of state, enter same amount both times",
+                            value = 30000),
+               
+               br()
+               
+             ),
+             
+             # Show outputs
+             mainPanel(
+               h1("Your results!"),
+               uiOutput("dynamicUserOutputs")
              )
              
              #Closes sidebar layout
